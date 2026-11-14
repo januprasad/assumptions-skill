@@ -10,13 +10,16 @@ This repo contains a reusable Claude skill named `assumption-check` that helps a
 - separate facts from guesses
 - ask the user for confirmation before making key decisions
 - reduce silent default choices that can lead to rework
+- show a short plan for approval before any code is written
 - document the final decisions made during a task
 
 The goal is to make AI-assisted work more transparent, safer, and easier to review.
 
-## Included skill
+## Included files
 
 - `SKILL.md` — the Claude skill instructions for handling assumptions before coding or changes
+- `references/categories.md` — a checklist of assumption categories used to build the ledger
+- `references/question-format.md` — question, plan, and ledger templates with good and bad examples
 
 ## Why it matters
 
@@ -37,10 +40,20 @@ The skill helps the assistant:
 
 1. stop before editing files
 2. inspect the relevant code and context
-3. list the assumptions that would otherwise be guessed
-4. ask for user confirmation on important decisions
-5. proceed only after a clear go-ahead
-6. save the final decisions in a local decisions file when appropriate
+3. restate the goal, what "done" means, and what must not change
+4. list the assumptions that would otherwise be guessed, each with its basis and cost if wrong
+5. ask only what matters, using a fixed ask-or-proceed rule, with independent questions batched together
+6. show a short plan and proceed only after a clear go-ahead
+7. save the final decisions, with their status and scope, in `.claude/decisions.md`
+8. stop and ask again if something unplanned comes up mid-implementation
+9. verify the result and report which decisions were applied and what deviated
+
+## Controls for the user
+
+- **Autonomy setting:** `strict` (ask almost everything), `balanced` (default), or `fast` (ask only about high-cost items).
+- **Show assumptions:** type "show assumptions" at any point to see the current ledger.
+- **Decision status:** each saved decision is marked `confirmed`, `delegated`, or `default`, and as `task-only` or `project-wide`. Saved decisions are checked against the current code before they are reused.
+- **Unattended runs:** when nobody can answer, the skill uses recommended defaults, marks them unconfirmed, and makes no irreversible changes.
 
 ## Intended use
 
@@ -55,13 +68,17 @@ It is particularly valuable for:
 - setup or initialization tasks
 - anything where hidden assumptions could change the outcome
 
+It is skipped for pure questions, explanations, code reading, and tiny edits (one file, no behavior change).
+
 ## Repository structure
 
 ```text
 assumptions-skill/
 ├── SKILL.md
 ├── README.md
-└── .gitignore (if added later)
+└── references/
+    ├── categories.md
+    └── question-format.md
 ```
 
 ## Notes
